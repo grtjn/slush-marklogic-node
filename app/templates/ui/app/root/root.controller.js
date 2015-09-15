@@ -4,12 +4,11 @@
   angular.module('app.root')
     .controller('RootCtrl', RootCtrl);
 
-  RootCtrl.$inject = ['$state', 'messageBoardService'];
+  RootCtrl.$inject = ['messageBoardService'];
 
-  function RootCtrl($state, messageBoardService) {
+  function RootCtrl(messageBoardService) {
     var ctrl = this;
     angular.extend(ctrl, {
-      currentState: $state.current.name,
       messageBoardService: messageBoardService
     });
   }
