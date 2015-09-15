@@ -16,16 +16,22 @@
   function SearchModel(searchFactory) {
     var mlSearch = searchFactory.newContext();
     return {
-      mlSearch: mlSearch,
-      response: null
+      mlSearch: mlSearch
     };
   }
 
   function SearchCtrl($scope, $location, userService, searchModel) {
     var ctrl = this;
-    var mlSearch = searchModel.mlSearch;
 
-    superCtrl.constructor.call(ctrl, $scope, $location, mlSearch);
+    superCtrl.constructor.call(ctrl, $scope, $location, searchModel.mlSearch);
+
+    function urlChanged() {
+      var params = _.chain( $location.search() )
+        .omit( ctrl.mlSearch.getParamsKeys() )
+        .merge( ctrl.mlSearch.getParams() )
+        .value();
+      return !_.isEmpty($location.$$search) && !_.isEqual($location.$$search, params);
+    }
 
     //ctrl.init();
     (function init() {
@@ -37,25 +43,16 @@
         ctrl.parseExtraURLParams();
       }
 
-      if (searchModel.response) {
-        ctrl.response = searchModel.response;
+      if (ctrl.mlSearch.results.results && !urlChanged()) {
+        ctrl.response = ctrl.mlSearch.results;
         ctrl.updateURLParams();
       } else {
         ctrl.mlSearch.fromParams().then( ctrl._search.bind(ctrl) );
       }
     })();
 
-    ctrl.updateSearchResults = function updateSearchResults(data) {
-      searchModel.response = data;
-      this.searchPending = false;
-      this.response = data;
-      this.qtext = this.mlSearch.getText();
-      this.page = this.mlSearch.getPage();
-      return this;
-    };
-
     ctrl.setSnippet = function(type) {
-      mlSearch.setSnippet(type);
+      ctrl.mlSearch.setSnippet(type);
       ctrl.search();
     };
 
